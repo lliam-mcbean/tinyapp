@@ -13,10 +13,7 @@ const urlDatabase = {
 
 const generateRandomString = () => {
     let randomString = ''
-    for (let i = 0; i < 6; i++) {
-        let randomNumber = Math.round((Math.random() * 36))
-        randomString += randomNumber.toString()
-    }
+    randomString += Math.random().toString(20).substr(2, 6)
     return randomString
 }
 
@@ -25,13 +22,14 @@ app.get("/", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-    console.log(req.body);  // Log the POST request body to the console
-    res.send("Ok");         // Respond with 'Ok' (we will replace this)
+    const shortUrl = generateRandomString()
+    urlDatabase[shortUrl] = req.body.longURL  // Log the POST request body to the console
+    res.redirect(`/urls/${shortUrl}`);         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/new", (req, res) => {
     res.render("urls_new");
-  });
+});
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
@@ -42,8 +40,9 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/u/:shortURL", (req, res) => {
+    const longURL = urlDatabase[req.params.shortURL]
+    res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
