@@ -16,8 +16,8 @@ const urlDatabase = {
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    email: "1@1.com", 
+    password: "1"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -32,13 +32,13 @@ const generateRandomString = () => {
   return randomString
 }
 
-const emailSearch = (users, email) => {
-  for (const people in users) {
-    if (email === users[people].email) {
-      return false
+const emailSearch = (db, email) => {
+  for (const user in db) {
+    if (email === db[user].email) {
+      return db[user]
     }
   }
-  return true
+  return false
 }
 
 app.get("/", (req, res) => {
@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { 
-    username: users,
+    user: users,
     user_id: req.cookies['user_id'], 
     urls: urlDatabase
   }
@@ -56,7 +56,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: users,
+    user: users,
     user_id: req.cookies['user_id']
   }
   res.render("urls_new", templateVars);
@@ -64,15 +64,23 @@ app.get("/urls/new", (req, res) => {
 
 app.get('/register', (req, res) => {
   const templateVars = {
-    username: users,
+    user: users,
     user_id: req.cookies['user_id']
   }
   res.render("urls_register", templateVars);
 })
 
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: users,
+    user_id: req.cookies['user_id']
+  }
+  res.render('urls_login', templateVars)
+})
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
-    username: users,
+    user: users,
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL],
     user_id: req.cookies['user_id']
@@ -91,7 +99,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get('*', (req, res) => {
   const templateVars = {
-    username: users,
+    user: users,
     user_id: req.cookies['user_id']
   }
   res.render('urls_404', templateVars)
@@ -114,12 +122,17 @@ app.post('/urls/:shortURL', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username)
+  const user = emailSearch(users, req.body.email)
+  if (!user) {
+    res.send('Error on login. user not found')
+  }
+
+  res.cookie('user', req.body.user)
   res.redirect('/urls')
 })
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect('/urls')
 })
 
@@ -137,7 +150,7 @@ app.post('/register', (req, res) => {
       email: req.body.email,
       password: req.body.password
     }
-    console.log(users)
+
     res.cookie('user_id', newUserId)
     res.redirect('/urls')
   }

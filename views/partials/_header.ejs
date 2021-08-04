@@ -10,16 +10,20 @@
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         </div>
         
-        <% if (username[user_id]) { %>
+        <% if (user[user_id]) { %>
           <form action="/logout" method="POST" class="form-inline">
-            <p style="margin: 0px 8px 0px 0px;">Logged In As: <span style="color: #ffc000; font-size: 20px; padding: 3px; text-shadow: 0.5px 0.5px black;"><%= username[user_id].email %></span></p>
+            <p style="margin: 0px 8px 0px 0px;">Logged In As: <span style="color: #ffc000; font-size: 20px; padding: 3px; text-shadow: 0.5px 0.5px black;"><%= user[user_id].email %></span></p>
             <button type="submit" class="btn btn-outline-dark">Logout</button>
           </form>
         <% } else { %> 
-          <form action="/login" method="POST" class="form-inline">
-            <input class="form-control" type="text" name="username" class="form-control mr-sm-2" style='margin-right: 5px;'>
-            <button type="submit" class="btn btn-outline-dark" class="btn btn-outline-success">Login</button>
-          </form>
+          <div style="display: flex;">
+            <form action="/login" method="GET" class="form-inline" style="padding-right: 8px;">
+              <button type="submit" class="btn btn-outline-dark" class="btn btn-outline-success">Login</button>
+            </form>
+            <form action="/register" method="GET" class="form-inline">
+              <button type="submit" class="btn btn-outline-dark" class="btn btn-outline-success">Register</button>
+            </form>
+          </div>
         <% } %>
       
       </div>
