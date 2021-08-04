@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <title>New URL - TinyApp Example</title>
+  </head>
+  <body>
+
+    <%- include('partials/_header') %>
+    <h3 style="text-align: center; margin-top: 40px; font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; text-decoration: #28a744 underline;">404 Page Not Found</h3>
+
+    <main style="margin: 1em;">
+        <canvas style='padding: 0; margin: 0' class="webGL-render"></canvas>
+    </main>
+    <style>
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+        }
+    </style>
+      <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+
+        const canvas = document.querySelector('.webGL-render')
+
+        const scene = new THREE.Scene()
+
+        const sizes = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        }
+
+        const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height)
+        camera.position.z = 4
+
+        scene.add(camera)
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+        scene.add(ambientLight)
+
+        const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.3)
+        scene.add(directionalLight)
+
+        const circleGroup = new THREE.Group()
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.01,
+            sizeAttenuation: true,
+            color: '#28a744',
+            transparent: true,
+            depthTest: false
+        })
+        const otherParticlesMaterial = new THREE.PointsMaterial({
+            size: 0.01,
+            sizeAttenuation: true,
+            color: '#28a744',
+            transparent: true,
+            depthTest: false
+        })
+        const circleMaker = (r,width, count, moveable, material) => {
+            const particleGeometry = new THREE.BufferGeometry()
+            const positions = new Float32Array(count * 3)
+            for (let i = 0; i < count; i++) {
+                let randomS = Math.random() * 2 * Math.PI
+                let radius = r + (Math.random() * width)
+                for (let j = 0; j < 3; j++) {
+                    if (j == 0) {
+                        positions[(3*i + j)] = (radius * Math.sin(randomS))
+                    }
+                    if (j == 1) {
+                        positions[(3*i + j)] = (radius * Math.cos(randomS))
+                    }
+                    if (j == 2) {
+                        positions[(3*i + j)] = 0
+                    }
+                }
+            } 
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+            const particles = new THREE.Points(particleGeometry, material)
+            if (moveable) {
+                circleGroup.add(particles)
+                scene.add(circleGroup)
+            }
+            else {
+                scene.add(particles)
+            }
+        }
+
+
+        const makerOfTheCircleMaker = (moveable, material) => {
+            let radiusCounter = 0.1;
+            let particleCounter = 300
+            for (let i = 0; i < 30; i++) {
+                circleMaker(radiusCounter, 0.015, particleCounter, moveable, material)
+                radiusCounter += 0.05
+                particleCounter += 100
+            }
+        }
+        makerOfTheCircleMaker(true, otherParticlesMaterial)
+        makerOfTheCircleMaker(false, particlesMaterial)
+
+        window.addEventListener('mousemove', (event) => {
+            const x = (event.clientX / window.innerWidth) - 0.5
+            const y = (-event.clientY / window.innerHeight) + 0.5
+            
+            circleGroup.position.x = x 
+            circleGroup.position.y = y 
+        })
+
+        window.addEventListener('resize', () => {
+            console.log('hello')
+            sizes.width = window.innerWidth
+            sizes.height = window.innerHeight
+
+            camera.aspect = (sizes.width / sizes.height)
+            camera.updateProjectionMatrix()
+
+            renderer.setSize(sizes.width, sizes.height)
+        })
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            alpha: true
+        })
+        renderer.setSize(sizes.width, sizes.height)
+        renderer.render(scene, camera)
+        renderer.setClearColor( 0x000000, 0)
+
+        const clock = new THREE.Clock()
+
+        const tick = () => {
+            const getElapsedTime = clock.getElapsedTime()
+
+            renderer.render(scene, camera)
+
+            window.requestAnimationFrame(tick)
+        }
+        tick()
+    </script>
+    </body>
+</html>
