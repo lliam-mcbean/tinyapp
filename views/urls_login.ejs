@@ -9,10 +9,12 @@
 <body>
     <%- include('partials/_header.ejs') %>
 
-    <form action="/login" method="POST" style="display: flex; justify-content: center; flex-direction: column; align-items: center; padding-top: 10vh;">
-        <input type="email" name="email" placeholder="email" style="width: 250px; margin: 20px;">
-        <input type="password" name="password" placeholder="password" style="width: 250px; margin: 20px;">
-        <button type="submit" class="btn btn-outline-success" style="width: 250px; margin: 20px;">Login</button>
+    <form action="/login" method="POST" style="display: flex; justify-content: center; padding-top: 10vh;">
+        <div style="background: rgb(220, 220, 220); display: flex; display: flex; justify-content: center; flex-direction: column; align-items: center; padding: 20px; border-radius: 10px;">
+            <input type="email" name="email" placeholder="email" style="width: 250px; margin: 20px;">
+            <input type="password" name="password" placeholder="password" style="width: 250px; margin: 20px;">
+            <button type="submit" class="btn btn-outline-success" style="width: 250px; margin: 20px;">Login</button>
+        </div>
     </form>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

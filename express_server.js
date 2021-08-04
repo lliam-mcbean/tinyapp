@@ -63,6 +63,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get('/register', (req, res) => {
+  console.log(res.statusCode)
   const templateVars = {
     user: users,
     user_id: req.cookies['user_id']
@@ -100,7 +101,17 @@ app.get("/u/:shortURL", (req, res) => {
 app.get('*', (req, res) => {
   const templateVars = {
     user: users,
-    user_id: req.cookies['user_id']
+    user_id: req.cookies['user_id'],
+    statusCode: req.params.statusCode
+  }
+  res.render('urls_404', templateVars)
+})
+
+app.get('/error/:statusCode', (req, res) => {
+  const templateVars = {
+    user: users,
+    user_id: req.cookies['user_id'],
+    statusCode: req.params.statusCode
   }
   res.render('urls_404', templateVars)
 })
@@ -124,10 +135,14 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/login', (req, res) => {
   const user = emailSearch(users, req.body.email)
   if (!user) {
-    res.send('Error on login. user not found')
+    res.statusCode = 403
+    res.redirect('/login')
   }
-
-  res.cookie('user', req.body.user)
+  if (user.password !== req.body.password) {
+    res.statusCode = 403
+    res.redirect('/login')
+  }
+  res.cookie('user_id', user.id)
   res.redirect('/urls')
 })
 
@@ -139,10 +154,10 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     res.statusCode = 400
-    res.end()
-  } else if (!emailSearch(users, req.body.email)) {
+    res.redirect('/register')
+  } else if (emailSearch(users, req.body.email)) {
     res.statusCode = 400
-    res.end()
+    res.redirect('/register')
   } else {
     const newUserId = generateRandomString()
     users[newUserId] = {
@@ -154,7 +169,6 @@ app.post('/register', (req, res) => {
     res.cookie('user_id', newUserId)
     res.redirect('/urls')
   }
-  console.log(users)
 })
 
 app.listen(PORT, () => {
