@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require('bcrypt')
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
@@ -23,12 +24,12 @@ const users = {
   "qwerty": {
     id: "qwerty", 
     email: "1@1.com", 
-    password: "1"
+    password: bcrypt.hashSync('1', 10)
   },
  "asdfgh": {
     id: "asdfgh", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 }
 
@@ -168,7 +169,7 @@ app.post('/login', (req, res) => {
     res.statusCode = 403
     res.redirect('/login')
   }
-  if (user.password !== req.body.password) {
+  if (!bcrypt.compareSync(req.body.password, user.password)) {
     res.statusCode = 403
     res.redirect('/login')
   }
@@ -193,7 +194,7 @@ app.post('/register', (req, res) => {
     users[newUserId] = {
       id: newUserId,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     }
 
     res.cookie('user_id', newUserId)
