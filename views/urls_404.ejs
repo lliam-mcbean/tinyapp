@@ -28,7 +28,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-
+        // Initial WebGL scene setup
         const canvas = document.querySelector('.webGL-render')
 
         const scene = new THREE.Scene()
@@ -48,10 +48,12 @@
 
         const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.3)
         scene.add(directionalLight)
-
+        
+        // Create two groups to add to our scene, one for each concentric circle
         const circleGroup = new THREE.Group()
         const rotatingCircles = new THREE.Group()
 
+        // Create 1 global instance of our material to apply to our geometries later
         const particlesMaterial = new THREE.PointsMaterial({
             size: 0.01,
             sizeAttenuation: true,
@@ -59,19 +61,16 @@
             transparent: true,
             depthTest: false
         })
-        const otherParticlesMaterial = new THREE.PointsMaterial({
-            size: 0.01,
-            sizeAttenuation: true,
-            color: '#28a744',
-            transparent: true,
-            depthTest: false
-        })
+
+        // create circle maker function with all parameters
         const circleMaker = (r,width, count, moveable, material) => {
             const particleGeometry = new THREE.BufferGeometry()
+            // particles read position values as [x1, y1, z1, x2, y2, z2]
             const positions = new Float32Array(count * 3)
             for (let i = 0; i < count; i++) {
                 let randomS = Math.random() * 2 * Math.PI
                 let radius = r + (Math.random() * width)
+                // while looping through our array, we need to give every x value a .sin(0 - 2pi) and every y .cos(0 - 2pi)
                 for (let j = 0; j < 3; j++) {
                     if (j == 0) {
                         positions[(3*i + j)] = (radius * Math.sin(randomS))
@@ -83,9 +82,11 @@
                         positions[(3*i + j)] = 0
                     }
                 }
+                // with enough random particles we should be able to make some circles
             } 
             particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
             const particles = new THREE.Points(particleGeometry, material)
+            // add geometries, particle positions and materials together and add to our scene
             if (moveable) {
                 circleGroup.add(particles)
                 scene.add(circleGroup)
@@ -96,6 +97,7 @@
             }
         }
 
+        // make another function that uses our circlemaker as a callback, this is so we can pass 2 circles as different groups
 
         const makerOfTheCircleMaker = (moveable, material) => {
             let radiusCounter = 0.1;
@@ -106,8 +108,13 @@
                 particleCounter += 100
             }
         }
-        makerOfTheCircleMaker(true, otherParticlesMaterial)
+
+        // call our two concentric circle drawings
+
+        makerOfTheCircleMaker(true, particlesMaterial)
         makerOfTheCircleMaker(false, particlesMaterial)
+
+        // add some mousemove functionality to one of our groups based on event.clientX / event.clientY
 
         window.addEventListener('mousemove', (event) => {
             const x = (event.clientX / window.innerWidth) - 0.5
@@ -117,8 +124,9 @@
             circleGroup.position.y = y 
         })
 
+        //resize event listener so we dont fuck with our image perspective
+
         window.addEventListener('resize', () => {
-            console.log('hello')
             sizes.width = window.innerWidth
             sizes.height = window.innerHeight
 
@@ -128,6 +136,7 @@
             renderer.setSize(sizes.width, sizes.height)
         })
 
+        // now we can finally render our scene
         const renderer = new THREE.WebGLRenderer({
             canvas,
             alpha: true
@@ -137,22 +146,22 @@
         renderer.setClearColor( 0x000000, 0)
 
         const clock = new THREE.Clock()
-
-        console.log(circleGroup, rotatingCircles)
-
+        let rotationConstant = 0
+        // this is where the rotation animation is done, using the requestanimationframe to call itsself at our computers frame rate (60 times per second or 120 if youre cool)
         const tick = () => {
             const getElapsedTime = clock.getElapsedTime()
 
-            
-            rotatingCircles.rotation.x = getElapsedTime / 10
-            rotatingCircles.rotation.y = getElapsedTime / 10
+            rotationConstant += 0.006
 
+            rotatingCircles.rotation.x = Math.cos(getElapsedTime / 4) + rotationConstant
+            rotatingCircles.rotation.y = Math.sin(getElapsedTime / 4) + rotationConstant
 
             renderer.render(scene, camera)
 
             window.requestAnimationFrame(tick)
         }
         tick()
+        // thanks for looking at my webgl scene, hope you like it lighthouse
     </script>
     </body>
 </html>

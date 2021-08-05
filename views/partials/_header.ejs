@@ -9,7 +9,7 @@
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         </div>
-        
+        <!-- conditional html template based on user authentication (refer to /logout POST and /login /register GET) -->
         <% if (user[user_id]) { %>
           <form action="/logout" method="POST" class="form-inline">
             <p style="margin: 0px 8px 0px 0px;">Logged In As: <span style="color: rgba(255, 255, 255, 0.9); font-size: 20px; padding: 3px;"><%= user[user_id].email %></span></p>

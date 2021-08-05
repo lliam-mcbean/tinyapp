@@ -15,6 +15,7 @@
       </div>
     <div class="card-footer text-muted"></div>
     <main style="margin: 1em; display: flex; flex-direction: column; align-items: center; margin-top: 30px;">
+      <!-- edit form for changing long URL -->
       <h3>Edit</h3>
       <form class="form-inline" action='/urls/<%= shortURL %>' method="POST">
         <div class="form-group mb-2" style="display: flex; flex-direction: column; background: rgb(220, 220, 220); padding: 30px; margin-top: 50px; border-radius: 10px;">
@@ -23,8 +24,11 @@
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </form>
+      
     </main>
   </div>
+
+  <!-- styling for short link only -->
   <style>
     .short-link {
       text-decoration: none;
