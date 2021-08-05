@@ -48,7 +48,7 @@ const users = {
 
 app.get("/", (req, res) => {
   if (req.session.user_id) {
-    res.redirect('/urls')
+    res.redirect('/urls');
   }
   res.redirect('/login');
 });
@@ -103,7 +103,7 @@ app.get("/urls/:shortURL", (req, res) => {
     user_id: req.session.user_id
   };
   if (req.session.user_id !== urlDatabase[req.params.shortURL].userID) {
-    res.statusCode = 400
+    res.statusCode = 400;
     res.redirect('*');
   } else {
     res.render("urls_show", templateVars);
@@ -119,8 +119,8 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
   } else {
-    res.statusCode = 404
-    res.redirect('*')
+    res.statusCode = 404;
+    res.redirect('*');
   }
 });
 
@@ -155,8 +155,8 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortUrl].userID = req.session.user_id;
     res.redirect(`/urls/${shortUrl}`);
   } else {
-    res.statusCode = 400
-    res.redirect('*')
+    res.statusCode = 400;
+    res.redirect('*');
   }
 });
 
@@ -165,8 +165,8 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
   } else {
-    res.statusCode = 400
-    res.redirect('*')
+    res.statusCode = 400;
+    res.redirect('*');
   }
   
 });
