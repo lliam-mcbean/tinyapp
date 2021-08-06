@@ -23,3 +23,13 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command.
+
+## Summary 
+
+Overall this was a good exercise in learning most of the prodominent features of express and server side Node.js.
+
+EJS is a good language to be aware of and is i nice introduction into component based web frameworks.
+
+Hashing is a rabbit hole I would love to go down when i have more time. I am really fascinated by how the algorithms are working under the hood (although it might be way over my head)
+
+cookie sessions and working with user IDs to log people in was a completely new experience for me and I am really glad to understand the core principles.
