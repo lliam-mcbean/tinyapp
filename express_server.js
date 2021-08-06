@@ -1,13 +1,36 @@
+
 //    IMPORTS
 
 const express = require("express");
 const methodOverride = require('method-override');
+const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
-const bodyParser = require("body-parser");
-const cookieSession = require('cookie-session');
+
+// HELPER FUNCTIONS
+
 const { emailSearch, generateRandomString } = require('./helpers');
+
+// DATA
+
+const { urlDatabase } = require('./data/data')
+
+// USERS
+
+const users = {
+  "qwerty": {
+      id: "qwerty",
+      email: "1@1.com",
+      password: bcrypt.hashSync('1', 10)
+  },
+  "asdfgh": {
+      id: "asdfgh",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("dishwasher-funk", 10)
+  }
+};
 
 //    EXPRESS FUNCTIONALITY
 
@@ -19,38 +42,6 @@ app.use(cookieSession({
   maxAge: 1 * 60 * 60 * 1000
 }));
 app.set('view engine', 'ejs');
-
-//    DATA
-
-const visitors = {}
-
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: 'qwerty',
-    visits: 0,
-    visitors: []
-  },
-  "sgq3y6": {
-    longURL: 'http://www.google.com',
-    userID: 'asdfgh',
-    visits: 0,
-    visitors: []
-  }
-};
-
-const users = {
-  "qwerty": {
-    id: "qwerty",
-    email: "1@1.com",
-    password: bcrypt.hashSync('1', 10)
-  },
-  "asdfgh": {
-    id: "asdfgh",
-    email: "user2@example.com",
-    password: bcrypt.hashSync("dishwasher-funk", 10)
-  }
-};
 
 //    GET REQUESTS
 
@@ -161,15 +152,6 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  const templateVars = {
-    user: users,
-    user_id: req.session.user_id,
-    statusCode: req.params.statusCode
-  };
-  res.render('urls_404', templateVars);
-});
-
-app.get('/error/:statusCode', (req, res) => {
   const templateVars = {
     user: users,
     user_id: req.session.user_id,
