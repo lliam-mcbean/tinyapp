@@ -1,6 +1,7 @@
 //    IMPORTS
 
 const express = require("express");
+const methodOverride = require('method-override');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
@@ -11,6 +12,7 @@ const { emailSearch, generateRandomString } = require('./helpers');
 //    EXPRESS FUNCTIONALITY
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
@@ -20,14 +22,20 @@ app.set('view engine', 'ejs');
 
 //    DATA
 
+const visitors = {}
+
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: 'qwerty'
+    userID: 'qwerty',
+    visits: 0,
+    visitors: []
   },
   "sgq3y6": {
     longURL: 'http://www.google.com',
-    userID: 'asdfgh'
+    userID: 'asdfgh',
+    visits: 0,
+    visitors: []
   }
 };
 
@@ -44,7 +52,7 @@ const users = {
   }
 };
 
-//    GETS
+//    GET REQUESTS
 
 app.get("/", (req, res) => {
   if (req.session.user_id) {
@@ -59,6 +67,7 @@ app.get("/urls", (req, res) => {
     user_id: req.session.user_id,
     urls: {}
   };
+  // looping through the objects in our database to validate userID
   for (const keys in urlDatabase) {
     if (urlDatabase[keys].userID === templateVars.user_id) {
       templateVars.urls[keys] = urlDatabase[keys];
@@ -96,18 +105,27 @@ app.get('/login', (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    user: users,
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user_id: req.session.user_id
-  };
-  if (req.session.user_id !== urlDatabase[req.params.shortURL].userID) {
-    res.statusCode = 400;
-    res.redirect('*');
+  if (urlDatabase[req.params.shortURL]) {
+      // sending all the parameters to our edit page. site visits and unique visitors refer to stretch
+      const templateVars = {
+        user: users,
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL,
+        user_id: req.session.user_id,
+        visits: urlDatabase[req.params.shortURL].visits,
+        visitors: urlDatabase[req.params.shortURL].visitors.length
+      };
+      if (req.session.user_id !== urlDatabase[req.params.shortURL].userID) {
+        res.statusCode = 400;
+        res.redirect('*');
+      } else {
+        res.render("urls_show", templateVars);
+      }
   } else {
-    res.render("urls_show", templateVars);
+    res.statusCode = 404
+    res.redirect('/*')
   }
+
 });
 
 app.get("/urls.json", (req, res) => {
@@ -115,8 +133,26 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if(!req.session.user_id) {
+    req.session.user_id = generateRandomString()
+  }
+  const visitors = urlDatabase[req.params.shortURL].visitors
   if (urlDatabase[req.params.shortURL]) {
+    // add unique visitors to our visitors array within our shortURL object (stretch)
+    if (visitors.length === 0) {
+      visitors.push(req.session.user_id)
+    }
+
+    for (let i = 0; i < visitors.length; i++) {
+      if (req.session.user_id === visitors[i]) {
+        break
+      } else if (i === visitors.length - 1) {
+        visitors.push(req.session.user_id)
+      }
+    }
+
     const longURL = urlDatabase[req.params.shortURL].longURL;
+    urlDatabase[req.params.shortURL].visits += 1;
     res.redirect(longURL);
   } else {
     res.statusCode = 404;
@@ -142,7 +178,7 @@ app.get('/error/:statusCode', (req, res) => {
   res.render('urls_404', templateVars);
 });
 
-//   POSTS
+//   POST REQUESTS
 
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
@@ -153,6 +189,8 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortUrl] = {};
     urlDatabase[shortUrl].longURL = req.body.longURL;
     urlDatabase[shortUrl].userID = req.session.user_id;
+    urlDatabase[shortUrl].visits = 0;
+    urlDatabase[shortUrl].visitors = [];
     res.redirect(`/urls/${shortUrl}`);
   } else {
     res.statusCode = 400;
