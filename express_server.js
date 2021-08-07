@@ -15,20 +15,20 @@ const { emailSearch, generateRandomString } = require('./helpers');
 
 // DATA
 
-const { urlDatabase } = require('./data/data')
+const { urlDatabase } = require('./data/data');
 
 // USERS
 
 const users = {
   "qwerty": {
-      id: "qwerty",
-      email: "1@1.com",
-      password: bcrypt.hashSync('1', 10)
+    id: "qwerty",
+    email: "1@1.com",
+    password: bcrypt.hashSync('1', 10)
   },
   "asdfgh": {
-      id: "asdfgh",
-      email: "user2@example.com",
-      password: bcrypt.hashSync("dishwasher-funk", 10)
+    id: "asdfgh",
+    email: "user2@example.com",
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
 
@@ -97,24 +97,24 @@ app.get('/login', (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-      // sending all the parameters to our edit page. site visits and unique visitors refer to stretch
-      const templateVars = {
-        user: users,
-        shortURL: req.params.shortURL,
-        longURL: urlDatabase[req.params.shortURL].longURL,
-        user_id: req.session.user_id,
-        visits: urlDatabase[req.params.shortURL].visits,
-        visitors: urlDatabase[req.params.shortURL].visitors.length
-      };
-      if (req.session.user_id !== urlDatabase[req.params.shortURL].userID) {
-        res.statusCode = 400;
-        res.redirect('*');
-      } else {
-        res.render("urls_show", templateVars);
-      }
+    // sending all the parameters to our edit page. site visits and unique visitors refer to stretch
+    const templateVars = {
+      user: users,
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      user_id: req.session.user_id,
+      visits: urlDatabase[req.params.shortURL].visits,
+      visitors: urlDatabase[req.params.shortURL].visitors.length
+    };
+    if (req.session.user_id !== urlDatabase[req.params.shortURL].userID) {
+      res.statusCode = 400;
+      res.redirect('*');
+    } else {
+      res.render("urls_show", templateVars);
+    }
   } else {
-    res.statusCode = 404
-    res.redirect('/*')
+    res.statusCode = 404;
+    res.redirect('/*');
   }
 
 });
@@ -124,21 +124,21 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  if(!req.session.user_id) {
-    req.session.user_id = generateRandomString()
+  if (!req.session.user_id) {
+    req.session.user_id = generateRandomString();
   }
-  const visitors = urlDatabase[req.params.shortURL].visitors
+  const visitors = urlDatabase[req.params.shortURL].visitors;
   if (urlDatabase[req.params.shortURL]) {
     // add unique visitors to our visitors array within our shortURL object (stretch)
     if (visitors.length === 0) {
-      visitors.push(req.session.user_id)
+      visitors.push(req.session.user_id);
     }
 
     for (let i = 0; i < visitors.length; i++) {
       if (req.session.user_id === visitors[i]) {
-        break
+        break;
       } else if (i === visitors.length - 1) {
-        visitors.push(req.session.user_id)
+        visitors.push(req.session.user_id);
       }
     }
 
@@ -192,11 +192,16 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 app.post('/urls/:shortURL', (req, res) => {
-  if (!(req.body.longURL).includes('http')) {
-    req.body.longURL = 'http://' + req.body.longURL;
+  if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
+    if (!(req.body.longURL).includes('http')) {
+      req.body.longURL = 'http://' + req.body.longURL;
+    }
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    res.redirect(`/urls`);
+  } else {
+    res.statusCode = 404;
+    res.redirect('*');
   }
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect(`/urls`);
 });
 
 app.post('/login', (req, res) => {
